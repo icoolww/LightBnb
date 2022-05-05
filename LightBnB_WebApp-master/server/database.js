@@ -114,7 +114,28 @@ exports.addUser = addUser;
  * @return {Promise<[{}]>} A promise to the reservations.
  */
 const getAllReservations = function(guest_id, limit = 10) {
-  return getAllProperties(null, 2);
+pool
+  .query(
+  `SELECT reservations.*, properties.*, avg(rating) as average_rating
+  FROM reservations
+  JOIN properties ON reservations.property_id = properties.id
+  JOIN property_reviews ON properties.id = property_reviews.property_id
+  WHERE reservations.guest_id = $1
+  GROUP BY properties.id, reservations.id
+  ORDER BY reservations.start_date
+  LIMIT $2;`
+  , [guest_id, limit])
+  .then((result) => {
+    if (result.rows) {
+      console.log(result.rows[0]);
+      return result.rows[0];
+    }
+    return null;
+  })
+  .catch((err) => {
+    console.log(err.message);
+  });
+  // return getAllProperties(null, 2);
 }
 exports.getAllReservations = getAllReservations;
 
@@ -127,38 +148,40 @@ exports.getAllReservations = getAllReservations;
  * @return {Promise<[{}]>}  A promise to the properties.
  */
 // const getAllProperties = function(options, limit = 10) {
-//   const limitedProperties = {};
-//   for (let i = 1; i <= limit; i++) {
-//     limitedProperties[i] = properties[i];
-//   }
-//   return Promise.resolve(limitedProperties);
-// }
-// exports.getAllProperties = getAllProperties;
-
-// refactoring
-const getAllProperties = (options, limit = 10) => {
-  return pool
-    .query(`SELECT * FROM properties LIMIT $1`, [limit])
-    .then((result) => {
-      console.log(result.rows);
-      return result.rows;
-    })
-    .catch((err) => {
-      console.log(err.message);
-    });
-};
-exports.getAllProperties = getAllProperties;
-
-
-/**
- * Add a property to the database
- * @param {{}} property An object containing all of the property details.
- * @return {Promise<{}>} A promise to the property.
- */
-const addProperty = function(property) {
-  const propertyId = Object.keys(properties).length + 1;
-  property.id = propertyId;
-  properties[propertyId] = property;
-  return Promise.resolve(property);
-}
-exports.addProperty = addProperty;
+  //   const limitedProperties = {};
+  //   for (let i = 1; i <= limit; i++) {
+    //     limitedProperties[i] = properties[i];
+    //   }
+    //   return Promise.resolve(limitedProperties);
+    // }
+    // exports.getAllProperties = getAllProperties;
+    
+    // refactoring
+    const getAllProperties = (options, limit = 10) => {
+      return pool
+      .query(`SELECT * FROM properties LIMIT $1`, [limit])
+      .then((result) => {
+        console.log(result.rows);
+        return result.rows;
+      })
+      .catch((err) => {
+        console.log(err.message);
+      });
+    };
+    exports.getAllProperties = getAllProperties;
+    
+    
+    /**
+     * Add a property to the database
+     * @param {{}} property An object containing all of the property details.
+     * @return {Promise<{}>} A promise to the property.
+     */
+    const addProperty = function(property) {
+      const propertyId = Object.keys(properties).length + 1;
+      property.id = propertyId;
+      properties[propertyId] = property;
+      return Promise.resolve(property);
+    }
+    exports.addProperty = addProperty;
+    
+    
