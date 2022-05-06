@@ -2,7 +2,6 @@ const properties = require('./json/properties.json');
 // const users = require('./json/users.json');
 const { Pool } = require('pg');
 
-
 const pool = new Pool({
   user: 'vagrant',
   password: '123',
@@ -10,11 +9,7 @@ const pool = new Pool({
   database: 'lightbnb',
 });
 
-
-
-
 /// Users
-
 /**
  * Get a single user from the database given their email.
  * @param {String} email The email of the user.
@@ -79,7 +74,7 @@ exports.getUserWithId = getUserWithId;
  * @return {Promise<{}>} A promise to the user.
  */
 const addUser =  function(user) {
-  const newUser = [user.name, user.email, user.passowrd]
+  const newUser = [user.name, user.email, user.password]
 
   return pool
   .query(`INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING *;`, newUser)
@@ -104,10 +99,7 @@ exports.addUser = addUser;
 // return Promise.resolve(user);
 
 
-
-
 /// Reservations
-
 /**
  * Get all reservations for a single user.
  * @param {string} guest_id The id of the user.
@@ -192,8 +184,6 @@ exports.getAllReservations = getAllReservations;
     queryParams.push(`%${options.minimum_rating}%`);
     queryString += `AND rating >= $${queryParams.length} `;
   }
-
-
 
 
   // 4
